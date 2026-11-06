@@ -21,3 +21,18 @@
 - Problema: Il semihosting non funziona.
 - Soluzione: Inserire in .vscode/launch.json l'abilitazione per il semihosting.
 - Prossimo passo: Configurazione timer per filtro alla pressione del pulsante
+
+### 2026-11-06
+- Obbiettibo: Implementare timer
+- Fatto: Implementata inizializzazione timer con inizializzazione pulsante + 
+         gestione IRQ del timer (impostato TIM11)
+- Problema: a. Inizialmente il timer non funzionava.
+            b. La gestione della IRQ messa in un file .c separato non funzionava.
+- Soluzione: a. Analizzanto il registro cnt 
+                ho visto che questo non contava. Avevo fatto un piccolo errore di
+                logica, avevo scritto 'TIM11->CR1 &= ~TIM_CR1_CEN;' invece di 
+                'TIM11->CR1 |= TIM_CR1_CEN;'.
+              b. Inserendo la chiamata nel cmake/files.cmake ora funziona.
+- Note: Ho provato vari tempi di filtro. 200ms sono quelli che vanno meglio.
+- Prossimo passo: Iniziare a scrivere la libreria del DHT22. Logica del pulsante
+                  da continuare quando sarà stata implementata la logica del DHT22.

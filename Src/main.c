@@ -7,19 +7,19 @@ extern void initialise_monitor_handles(void);
 
 int main(void)
 {
+    uint8_t index = 0;
+
     /* Loop forever */
     initialise_monitor_handles();
     button_init();
 
-	while(1)
+    while(1)
     {
-        if (!button_state())
+        if (button_state(true))
         {
-            printf("Bottone premuto!\n");
-        }
-        else
-        {
-            printf("Bottone NON premuto!\n");
+            printf("Pulsante premuto %u volte\n", ++index);
         }
     }
+
 }
+
