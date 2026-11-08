@@ -41,6 +41,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS
   ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/Include
   ${CMAKE_CURRENT_SOURCE_DIR}/Lib/Button
+  ${CMAKE_CURRENT_SOURCE_DIR}/Lib/TH_Sensor
 )
 
 # Compiler options

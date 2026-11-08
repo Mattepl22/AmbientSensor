@@ -36,3 +36,14 @@
 - Note: Ho provato vari tempi di filtro. 200ms sono quelli che vanno meglio.
 - Prossimo passo: Iniziare a scrivere la libreria del DHT22. Logica del pulsante
                   da continuare quando sarà stata implementata la logica del DHT22.
+
+#### N.B. La libreria del pulsante va migliorata per permettere di avere più pulsanti e per permettere l'inserimento del pin del pulsante
+
+### 2026-11-08
+- Obbiettivo: Iniziare a scrivere la libreria per il DHT22
+- Fatto: Scritta funzione per scrivere la modalità del pin e funzione per
+         l'inizializzazione.
+- Problema: 
+- Soluzione: 
+- Prossimo passo: Sistemare funzione per inizializzazione e continuare scrittura 
+                  libreria
