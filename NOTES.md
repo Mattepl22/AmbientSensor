@@ -47,3 +47,10 @@
 - Soluzione: 
 - Prossimo passo: Sistemare funzione per inizializzazione e continuare scrittura 
                   libreria
+
+### 2026-11-09
+- Obbiettivo: Continuazione scrittura libreria per il DHT22
+- Fatto: Impostato timer 10 per tempi richiesti a dht22
+- Problema: 
+- Soluzione: 
+- Prossimo passo: Continuare con la libreria
