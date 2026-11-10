@@ -2,6 +2,7 @@
 #define TH_SENSOR_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum
 {
@@ -25,6 +26,7 @@ typedef struct
     float humidity;
 } sensor_data_t;
 
-void th_sensor_init(sensor_data_t *sensor_data);
+void th_sensor_init(const sensor_data_t *sensor_data);
+bool th_sensor_read(sensor_data_t *sensor_data);
 
 #endif

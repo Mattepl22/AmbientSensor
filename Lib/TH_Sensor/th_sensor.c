@@ -56,7 +56,155 @@ static void timer_init(void)
     NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2);
 }
 
-void th_sensor_init(sensor_data_t *sensor_data)
+static bool send_start_signal(const sensor_data_t *sensor_data)
+{
+    GPIO_TypeDef *gpio = gpio_ports[sensor_data->sensor_pin.port];
+    // Se è la port H la posizione da scrivere è la 7
+    uint32_t shift = ((sensor_data->sensor_pin.port != PORT_H) ? sensor_data->sensor_pin.num : 7);
+
+    static uint8_t machine_state = 0;   // Fase della macchina a stati
+    static uint32_t start_time = 0;    // CNT di inizio della fase
+    static bool waiting = false;        // Variabile per segnare l'attesa del tempo
+
+    // Imposto il pin come output
+    set_pin_mode(&sensor_data, OUTPUT_MODE);
+
+
+    switch (machine_state)
+    {
+        case 0: // Alzo l'uscita e attendo per essere sicuro che il sensore lo rilevi
+            if (!waiting)
+            {
+                gpio->ODR |= (1 << shift);
+                start_time = TIM10->CNT;
+                waiting = true;
+            }
+
+            if (waiting && ((TIM10->CNT - start_time) >= T_WAIT_SIGNAL_HIGH))
+            {
+                machine_state = 1;
+                waiting = false;
+            }
+            else
+            {
+                // Il break lo metto qua così quando scatta la condizione ok salto diretto
+                // allo stato successivo
+                break; 
+            }
+
+        case 1: // Abbasso l'uscita e attendo 1ms
+            if (!waiting)
+            {
+                gpio->ODR &= ~(1 << shift);
+                start_time = TIM10->CNT;
+                waiting = true;                
+            }
+
+            if (waiting && ((TIM10->CNT - start_time) >= T_WAIT_START_SIGNAL_LOW))
+            {
+                machine_state = 2;
+                waiting = false;
+            }
+            else
+            {
+                break;
+            }
+
+        case 2: // Alzo l'uscita e attendo 20-40us
+            if (!waiting)
+            {
+                gpio->ODR |= (1 << shift);
+                start_time = TIM10->CNT;
+                waiting = true;                
+            }
+
+            if (waiting && ((TIM10->CNT - start_time) >= T_WAIT_START_SIGNAL_HIGH))
+            {
+                machine_state = 3;
+                waiting = false;
+            }
+            else
+            {
+                break;
+            }
+
+        case 3: // Azzero la macchina a stati e ritorno true in uscita per segnalare op completata
+            machine_state = 0;
+            return true;
+            break;
+
+        default:
+            machine_state = 0;
+            break;
+    }
+
+    return false;
+}
+
+static uint32_t count_signal_time(const sensor_data_t *sensor_data, bool state_to_read)
+{
+    GPIO_TypeDef *gpio = gpio_ports[sensor_data->sensor_pin.port];
+    // Se è la port H la posizione da scrivere è la 7
+    uint32_t shift = ((sensor_data->sensor_pin.port != PORT_H) ? sensor_data->sensor_pin.num : 7);
+
+    static uint8_t machine_state = 0;   // Fase della macchina a stati
+    static uint32_t start_time = 0;     // CNT di inizio della fase e del tempo di fine
+    static uint32_t stop_time = 0;
+    static bool waiting = false;        // Variabile per segnare l'attesa del tempo
+
+    bool actual_pin_state;
+
+    switch (machine_state)
+    {
+        case 0: // Attendo cambio stato segnale
+            actual_pin_state = (gpio->IDR & (1 << shift));
+
+            if (actual_pin_state == state_to_read)
+            {
+                machine_state = 1;
+            }
+            else
+            {
+                break;
+            }
+
+        case 1: // Comincio la misura del tempo
+            if (!waiting)
+            {
+                start_time = TIM10->CNT;
+                actual_pin_state = (gpio->IDR & (1 << shift));
+                waiting = true;
+            }
+            
+            if (waiting && (actual_pin_state != state_to_read))
+            {
+                stop_time = TIM10->CNT;
+                waiting = false;
+                machine_state = 2:
+            }
+            else
+            {
+                break;
+            }
+        
+        case 2: // Calcolo il tempo 
+
+            machine_state = 0;
+            return stop_time - start_time;
+        
+        default:
+            machine_state = 0;
+            break;
+    }
+
+    return 0;
+}
+
+/*
+ *  Definizione funzioni per utente
+ */
+
+void th_sensor_init(const sensor_data_t *sensor_data)
 {
     GPIO_TypeDef *gpio = gpio_ports[sensor_data->sensor_pin.port];
     
@@ -64,5 +212,38 @@ void th_sensor_init(sensor_data_t *sensor_data)
     uint32_t shift = ((sensor_data->sensor_pin.port != PORT_H) ? sensor_data->sensor_pin.num : 7);
 
     RCC->AHB1ENR |= (1 << shift);
-    set_pin_mode(&sensor_data, OUTPUT_MODE);
+
+    timer_init();
+}
+
+bool th_sensor_read(sensor_data_t *sensor_data)
+{
+    // Azzero il timer per sicurezza
+    TIM10->CNT = 0;
+    // Abilito il timer
+    TIM10->CR1 |= TIM_CR1_CEN;
+
+    static uint8_t machine_state = 0; 
+
+    // Macchina a stati per la gestione della lettura
+    switch (machine_state)
+    {
+        case 0: // Segnale di start
+            if (send_start_signal(&sensor_data))
+            {
+                machine_state = 1;
+            }
+
+            break;
+
+        case 1: // Attendo risposta del sensore
+
+        case 2:
+
+        default:
+            machine_state = 0;
+    }
+
+    return false;
+
 }

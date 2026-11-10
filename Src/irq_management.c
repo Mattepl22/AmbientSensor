@@ -7,7 +7,7 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
     button_irq_handler();
 }
 
-void TIM1_UP_TIM10_IRQn(void)
+void TIM1_UP_TIM10_IRQHandler(void)
 {
     
 }

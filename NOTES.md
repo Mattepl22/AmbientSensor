@@ -54,3 +54,13 @@
 - Problema: 
 - Soluzione: 
 - Prossimo passo: Continuare con la libreria
+
+### 2026-11-10
+- Obbiettivo: Continuazione scrittura libreria per il DHT22
+- Fatto: Iniziata la scrittura della funzione di lettura del sensore. 
+- Problema: 
+- Soluzione: 
+- Note: La lettura viene gestita tramite macchine a stati. Nei vari passaggi da una fase alla
+        successiva non metto il break così che il passaggio avvenga istantaneamente.
+- Prossimo passo: Continuare la parte di attesa risposta del segnale. La funzione per il conteggio
+                  del tempo del pin in uno stato è già creata, va implementata nelle varie funzioni.
